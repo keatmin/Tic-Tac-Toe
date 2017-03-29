@@ -11,9 +11,7 @@ def _position_is_empty_in_board(position, board):
 
     Returns True if given position is empty, False otherwise.
     """
-    i = position[0]
-    j = position[1]
-    return board[i][j] == "-"
+    return board[position[0]][position[1]] == "-"
 
 
 def _position_is_valid(position):
@@ -28,9 +26,12 @@ def _position_is_valid(position):
 
     Returns True if given position is valid, False otherwise.
     """
-    if not isinstance(position, tuple): return False
-    elif not len(position) == 2: return False
-    elif not all([x >= 0 and x <= 2 for x in position]): return False
+    if not isinstance(position, tuple): 
+        return False
+    elif len(position) != 2: 
+        return False
+    elif not all([x in range(3) for x in position]): 
+        return False
     
     return True
 
@@ -126,28 +127,30 @@ def move(game, player, position):
     """
     if not _position_is_valid(position): 
         raise InvalidMovement('Position out of range.')
-    if game['winner'] or _board_is_full(game['board']): #game is over
+    elif game['winner'] or _board_is_full(game['board']): #game is over
         raise InvalidMovement('Game is over.')    
-    if not _position_is_empty_in_board(position, game['board']):
+    elif not _position_is_empty_in_board(position, game['board']):
         raise InvalidMovement('Position already taken.')
-    if not player == game['next_turn']:
-        raise InvalidMovement('"%s" moves next'%(game['next_turn']))
+    elif not player == game['next_turn']:
+        raise InvalidMovement('"{}" moves next'.format(game['next_turn']))
     
     
     i = position[0]
     j = position[1]
-    game['board'][i][j] = player
+    game['board'][position[0]][position[1]] = player
     
+    if _check_winning_combinations(game['board'], player):
+        game['winner'] = player
+        raise GameOver('"{}" wins!'.format(player))
+    elif _board_is_full(game['board']): #game is tied
+        raise GameOver('Game is tied!')
+        
     if player == game['player1']:
         game['next_turn'] = game['player2']
     else:
         game['next_turn'] = game['player1']
     
-    if _check_winning_combinations(game['board'], player):
-        game['winner'] = player
-        raise GameOver('"%s" wins!'%(player))
-    if _board_is_full(game['board']): #game is tied
-        raise GameOver('Game is tied!')
+    
 
 def get_board_as_string(game):
     """
@@ -155,14 +158,11 @@ def get_board_as_string(game):
     """
     
     ret = []
-    dashes = "--------------\n"
+    dashes = "--------------"
     for row in game['board']:
-        first = row[0]
-        second = row[1]
-        third = row[2]
-        row_str = "%(first)s  |  %(second)s  |  %(third)s\n"%{'first': first, 'second': second, 'third': third}
+        row_str = "\n{}  |  {}  |  {}\n".format(row[0], row[1], row[2])
         ret.append(row_str)
-    return "\n" + dashes.join(ret)
+    return dashes.join(ret)
 
 
 def get_next_turn(game):
