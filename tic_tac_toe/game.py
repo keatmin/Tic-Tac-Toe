@@ -134,9 +134,6 @@ def move(game, player, position):
     elif not player == game['next_turn']:
         raise InvalidMovement('"{}" moves next'.format(game['next_turn']))
     
-    
-    i = position[0]
-    j = position[1]
     game['board'][position[0]][position[1]] = player
     
     if _check_winning_combinations(game['board'], player):
